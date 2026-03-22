@@ -13,20 +13,20 @@
 ## Phase 0. 프로젝트 베이스라인
 
 ### Backend
-- [ ] 패키지 구조를 `common`, `auth`, `user`, `task`, `share`, `comment`, `notification` 기준으로 정리한다.
-- [ ] 공통 예외 클래스와 `@RestControllerAdvice` 기반 글로벌 예외 핸들러를 만든다.
-- [ ] 공통 응답 구조 또는 API 에러 응답 포맷을 정의한다.
-- [ ] H2 연결과 JPA 기본 설정을 `application.properties`에 반영한다.
-- [ ] CORS 개발 환경 허용 설정을 추가한다.
-- [ ] 헬스체크용 기본 API를 추가한다.
+- [x] 패키지 구조를 `common`, `auth`, `user`, `task`, `share`, `comment`, `notification` 기준으로 정리한다.
+- [x] 공통 예외 클래스와 `@RestControllerAdvice` 기반 글로벌 예외 핸들러를 만든다.
+- [x] 공통 응답 구조 또는 API 에러 응답 포맷을 정의한다.
+- [x] H2 연결과 JPA 기본 설정을 `application.properties`에 반영한다.
+- [x] CORS 개발 환경 허용 설정을 추가한다.
+- [x] 헬스체크용 기본 API를 추가한다.
 
 ### Frontend
-- [ ] `frontend/` 기준 Next.js App Router 프로젝트를 생성한다.
-- [ ] TypeScript와 Tailwind CSS 초기 설정을 완료한다.
-- [ ] 기본 라우트 구조(`/`, `/login`, `/my-tasks`, `/shared`)를 만든다.
-- [ ] 공통 레이아웃과 기본 네비게이션 뼈대를 만든다.
-- [ ] 백엔드 API 베이스 URL 환경 변수 구조를 정리한다.
-- [ ] 기본 홈 페이지가 정상 렌더링되도록 구성한다.
+- [x] `frontend/` 기준 Next.js App Router 프로젝트를 생성한다.
+- [x] TypeScript와 Tailwind CSS 초기 설정을 완료한다.
+- [x] 기본 라우트 구조(`/`, `/login`, `/my-tasks`, `/shared`)를 만든다.
+- [x] 공통 레이아웃과 기본 네비게이션 뼈대를 만든다.
+- [x] 백엔드 API 베이스 URL 환경 변수 구조를 정리한다.
+- [x] 기본 홈 페이지가 정상 렌더링되도록 구성한다.
 
 ### 검증
 - [ ] 백엔드가 단독 실행된다.
