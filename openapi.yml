@@ -1,0 +1,292 @@
+openapi: 3.1.0
+info:
+  title: TeamFlow API
+  version: 0.1.0
+  description: |
+    TeamFlow MVP backend API specification.
+    This document currently covers the baseline health check and Phase 1 auth login endpoint.
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+tags:
+  - name: Health
+    description: Baseline status endpoints
+  - name: Auth
+    description: Authentication endpoints
+  - name: Tasks
+    description: Task creation and personal task listing endpoints
+paths:
+  /api/health:
+    get:
+      tags:
+        - Health
+      summary: Health check
+      operationId: getHealth
+      responses:
+        "200":
+          description: API is running
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthCheckResponse"
+  /api/auth/login:
+    post:
+      tags:
+        - Auth
+      summary: Login with email and password
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Login succeeded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        "400":
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /api/tasks:
+    post:
+      tags:
+        - Tasks
+      summary: Create a task for the current user
+      operationId: createTask
+      parameters:
+        - $ref: "#/components/parameters/XUserIdHeader"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TaskCreateRequest"
+      responses:
+        "201":
+          description: Task created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskSummaryResponse"
+        "400":
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Current user header missing
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /api/tasks/my:
+    get:
+      tags:
+        - Tasks
+      summary: Get tasks created by the current user
+      operationId: getMyTasks
+      parameters:
+        - $ref: "#/components/parameters/XUserIdHeader"
+        - name: filter
+          in: query
+          required: true
+          schema:
+            type: string
+            enum:
+              - today
+              - upcoming
+              - all
+              - done
+      responses:
+        "200":
+          description: Filtered task list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TaskSummaryResponse"
+        "400":
+          description: Invalid filter
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Current user header missing
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+components:
+  parameters:
+    XUserIdHeader:
+      name: X-User-Id
+      in: header
+      required: true
+      description: |
+        Temporary MVP user context header.
+        Until server-side session storage is added, task APIs identify the current user from this header.
+      schema:
+        type: integer
+        format: int64
+        example: 1
+  schemas:
+    HealthCheckResponse:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          example: UP
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: alice@example.com
+        password:
+          type: string
+          minLength: 4
+          maxLength: 255
+          example: password123
+    LoginResponse:
+      type: object
+      required:
+        - sessionToken
+        - user
+      properties:
+        sessionToken:
+          type: string
+          description: Lightweight client-side session token for MVP demo flows
+          example: 73b5356d-2de0-4f03-a2c0-5d5d7ca2d22d
+        user:
+          $ref: "#/components/schemas/SessionUser"
+    SessionUser:
+      type: object
+      required:
+        - id
+        - name
+        - email
+        - createdAt
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        name:
+          type: string
+          example: Alice Kim
+        email:
+          type: string
+          format: email
+          example: alice@example.com
+        createdAt:
+          type: string
+          format: date-time
+          example: 2026-03-22T09:00:00
+    ErrorResponse:
+      type: object
+      required:
+        - timestamp
+        - status
+        - code
+        - message
+        - path
+        - details
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          type: integer
+          example: 401
+        code:
+          type: string
+          example: INVALID_CREDENTIALS
+        message:
+          type: string
+          example: Email or password is incorrect
+        path:
+          type: string
+          example: /api/auth/login
+        details:
+          type: array
+          items:
+            type: string
+    TaskCreateRequest:
+      type: object
+      required:
+        - title
+      properties:
+        title:
+          type: string
+          maxLength: 200
+          example: Write API smoke test
+        description:
+          type: string
+          maxLength: 2000
+          example: Add a minimal request to verify the task API path
+        dueAt:
+          type: string
+          format: date-time
+          example: 2026-03-22T14:00:00
+    TaskSummaryResponse:
+      type: object
+      required:
+        - id
+        - title
+        - status
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        title:
+          type: string
+          example: Plan Phase 2 API
+        description:
+          type: string
+          nullable: true
+          example: Define the quick-add request and response DTOs
+        status:
+          type: string
+          enum:
+            - TODO
+            - IN_PROGRESS
+            - DONE
+        dueAt:
+          type: string
+          format: date-time
+          nullable: true
+        completedAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { TopNav } from "@/components/common/TopNav";
+import { ClientTopNav } from "@/components/common/ClientTopNav";
 import { apiBaseUrl } from "@/lib/api/config";
 import "./globals.css";
 
@@ -17,7 +17,7 @@ export default function RootLayout({
     <html lang="ko">
       <body>
         <div className="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 py-6 md:px-6">
-          <TopNav apiBaseUrl={apiBaseUrl} />
+          <ClientTopNav apiBaseUrl={apiBaseUrl} />
           <main className="flex-1 py-6">{children}</main>
         </div>
       </body>

@@ -12,7 +12,7 @@
   - Spring Data JPA, H2
   - Validation, Global Exception Handler
 - Frontend
-  - Next.js 16 (App Router), TypeScript
+  - Next.js 14.2.x (App Router), TypeScript
   - React + Tailwind CSS
 - API
   - REST + JSON

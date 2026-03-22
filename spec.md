@@ -28,7 +28,7 @@
 ## 3) 기술 스택
 - Backend: Spring Boot `4.0.4`(최신 안정), Spring Data JPA, H2, Validation
 - API 스타일: REST
-- Frontend: Next.js `16`(최신 안정), TypeScript, App Router
+- Frontend: Next.js `14.2.x`(현재 Node 18 실행 환경 기준), TypeScript, App Router
 - UI: React + Tailwind CSS
 - 공통 원칙: 가독성/유지보수 우선, 과도한 추상화 지양
 
