@@ -1,9 +1,14 @@
 package com.example.teamflow.task.service;
 
+import com.example.teamflow.common.exception.ForbiddenException;
 import com.example.teamflow.task.dto.request.TaskCreateRequest;
+import com.example.teamflow.task.dto.request.TaskStatusUpdateRequest;
+import com.example.teamflow.task.dto.request.TaskUpdateRequest;
+import com.example.teamflow.task.dto.response.TaskDetailResponse;
 import com.example.teamflow.task.dto.response.TaskSummaryResponse;
 import com.example.teamflow.task.entity.Task;
 import com.example.teamflow.task.entity.TaskStatus;
+import com.example.teamflow.task.exception.TaskNotFoundException;
 import com.example.teamflow.task.repository.TaskRepository;
 import com.example.teamflow.user.entity.User;
 import com.example.teamflow.user.service.UserService;
@@ -63,5 +68,89 @@ public class TaskService {
         return tasks.stream()
                 .map(TaskSummaryResponse::from)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public TaskDetailResponse getTask(Long currentUserId, Long taskId) {
+        Long userId = userService.requireCurrentUserId(currentUserId);
+        Task task = getTaskOrThrow(taskId);
+        assertCanViewTask(task, userId);
+        return TaskDetailResponse.from(task);
+    }
+
+    @Transactional
+    public TaskDetailResponse updateTask(Long currentUserId, Long taskId, TaskUpdateRequest request) {
+        Long userId = userService.requireCurrentUserId(currentUserId);
+        Task task = getTaskOrThrow(taskId);
+        assertCreator(task, userId);
+
+        User assignee = userService.getOptionalUser(request.assigneeId());
+        task.update(
+                request.title().trim(),
+                request.description(),
+                request.dueAt(),
+                assignee
+        );
+
+        return TaskDetailResponse.from(task);
+    }
+
+    @Transactional
+    public TaskDetailResponse updateTaskStatus(Long currentUserId, Long taskId, TaskStatusUpdateRequest request) {
+        Long userId = userService.requireCurrentUserId(currentUserId);
+        Task task = getTaskOrThrow(taskId);
+        assertCanChangeStatus(task, userId);
+        task.changeStatus(request.status());
+        return TaskDetailResponse.from(task);
+    }
+
+    @Transactional
+    public void deleteTask(Long currentUserId, Long taskId) {
+        Long userId = userService.requireCurrentUserId(currentUserId);
+        Task task = getTaskOrThrow(taskId);
+        assertCreator(task, userId);
+        taskRepository.delete(task);
+    }
+
+    private Task getTaskOrThrow(Long taskId) {
+        return taskRepository.findWithDetailsById(taskId)
+                .orElseThrow(() -> new TaskNotFoundException(taskId));
+    }
+
+    private void assertCanViewTask(Task task, Long userId) {
+        if (isCreator(task, userId) || isAssignee(task, userId) || isShared(task, userId)) {
+            return;
+        }
+
+        throw new ForbiddenException("TASK_FORBIDDEN", "You do not have access to this task");
+    }
+
+    private void assertCreator(Task task, Long userId) {
+        if (isCreator(task, userId)) {
+            return;
+        }
+
+        throw new ForbiddenException("TASK_FORBIDDEN", "Only the creator can modify this task");
+    }
+
+    private void assertCanChangeStatus(Task task, Long userId) {
+        if (isCreator(task, userId) || isAssignee(task, userId)) {
+            return;
+        }
+
+        throw new ForbiddenException("TASK_FORBIDDEN", "Only the creator or assignee can change task status");
+    }
+
+    private boolean isCreator(Task task, Long userId) {
+        return task.getCreator().getId().equals(userId);
+    }
+
+    private boolean isAssignee(Task task, Long userId) {
+        return task.getAssignee() != null && task.getAssignee().getId().equals(userId);
+    }
+
+    private boolean isShared(Task task, Long userId) {
+        return task.getShares().stream()
+                .anyMatch(share -> share.getUser().getId().equals(userId));
     }
 }

@@ -14,7 +14,9 @@ tags:
   - name: Auth
     description: Authentication endpoints
   - name: Tasks
-    description: Task creation and personal task listing endpoints
+    description: Task creation, detail, update, status change, and personal task listing endpoints
+  - name: Shares
+    description: Task sharing and assigned/shared task listing endpoints
 paths:
   /api/health:
     get:
@@ -132,6 +134,268 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+  /api/tasks/shared:
+    get:
+      tags:
+        - Shares
+      summary: Get tasks assigned to or shared with the current user
+      operationId: getSharedTasks
+      parameters:
+        - $ref: "#/components/parameters/XUserIdHeader"
+      responses:
+        "200":
+          description: Assigned and shared task groups
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SharedTaskListResponse"
+        "401":
+          description: Current user header missing
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /api/tasks/{taskId}:
+    get:
+      tags:
+        - Tasks
+      summary: Get task detail
+      operationId: getTask
+      parameters:
+        - $ref: "#/components/parameters/XUserIdHeader"
+        - $ref: "#/components/parameters/TaskIdPath"
+      responses:
+        "200":
+          description: Task detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskDetailResponse"
+        "401":
+          description: Current user header missing
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Access denied
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Task not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    put:
+      tags:
+        - Tasks
+      summary: Update task detail
+      operationId: updateTask
+      parameters:
+        - $ref: "#/components/parameters/XUserIdHeader"
+        - $ref: "#/components/parameters/TaskIdPath"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TaskUpdateRequest"
+      responses:
+        "200":
+          description: Task updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskDetailResponse"
+        "400":
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Current user header missing
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Only the creator can update the task
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Task or assignee not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      tags:
+        - Tasks
+      summary: Delete task
+      operationId: deleteTask
+      parameters:
+        - $ref: "#/components/parameters/XUserIdHeader"
+        - $ref: "#/components/parameters/TaskIdPath"
+      responses:
+        "204":
+          description: Task deleted
+        "401":
+          description: Current user header missing
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Only the creator can delete the task
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Task not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /api/tasks/{taskId}/shares:
+    post:
+      tags:
+        - Shares
+      summary: Share a task with another user
+      operationId: addTaskShare
+      parameters:
+        - $ref: "#/components/parameters/XUserIdHeader"
+        - $ref: "#/components/parameters/TaskIdPath"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TaskShareCreateRequest"
+      responses:
+        "200":
+          description: Share added and task detail returned
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskDetailResponse"
+        "400":
+          description: Invalid or duplicate share target
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Current user header missing
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Only the creator can manage shares
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Task or user not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /api/tasks/{taskId}/shares/{userId}:
+    delete:
+      tags:
+        - Shares
+      summary: Remove a shared user from a task
+      operationId: removeTaskShare
+      parameters:
+        - $ref: "#/components/parameters/XUserIdHeader"
+        - $ref: "#/components/parameters/TaskIdPath"
+        - $ref: "#/components/parameters/UserIdPath"
+      responses:
+        "200":
+          description: Share removed and task detail returned
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskDetailResponse"
+        "400":
+          description: Shared user link not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Current user header missing
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Only the creator can manage shares
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Task or user not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /api/tasks/{taskId}/status:
+    patch:
+      tags:
+        - Tasks
+      summary: Update task status
+      operationId: updateTaskStatus
+      parameters:
+        - $ref: "#/components/parameters/XUserIdHeader"
+        - $ref: "#/components/parameters/TaskIdPath"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TaskStatusUpdateRequest"
+      responses:
+        "200":
+          description: Task status updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskDetailResponse"
+        "400":
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Current user header missing
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Only the creator or assignee can change status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Task not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 components:
   parameters:
     XUserIdHeader:
@@ -145,6 +409,22 @@ components:
         type: integer
         format: int64
         example: 1
+    TaskIdPath:
+      name: taskId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+        example: 1
+    UserIdPath:
+      name: userId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+        example: 3
   schemas:
     HealthCheckResponse:
       type: object
@@ -290,3 +570,127 @@ components:
         updatedAt:
           type: string
           format: date-time
+    TaskUserResponse:
+      type: object
+      required:
+        - id
+        - name
+        - email
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        name:
+          type: string
+          example: Alice Kim
+        email:
+          type: string
+          format: email
+          example: alice@example.com
+    TaskDetailResponse:
+      type: object
+      required:
+        - id
+        - title
+        - status
+        - createdAt
+        - updatedAt
+        - creator
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 2
+        title:
+          type: string
+          example: Review shared workflow
+        description:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum:
+            - TODO
+            - IN_PROGRESS
+            - DONE
+        dueAt:
+          type: string
+          format: date-time
+          nullable: true
+        completedAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        creator:
+          $ref: "#/components/schemas/TaskUserResponse"
+        assignee:
+          allOf:
+            - $ref: "#/components/schemas/TaskUserResponse"
+          nullable: true
+        sharedUsers:
+          type: array
+          items:
+            $ref: "#/components/schemas/TaskUserResponse"
+    TaskUpdateRequest:
+      type: object
+      required:
+        - title
+      properties:
+        title:
+          type: string
+          maxLength: 200
+          example: Review shared workflow carefully
+        description:
+          type: string
+          maxLength: 2000
+          nullable: true
+        dueAt:
+          type: string
+          format: date-time
+          nullable: true
+        assigneeId:
+          type: integer
+          format: int64
+          nullable: true
+          example: 2
+    TaskStatusUpdateRequest:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum:
+            - TODO
+            - IN_PROGRESS
+            - DONE
+    TaskShareCreateRequest:
+      type: object
+      required:
+        - userId
+      properties:
+        userId:
+          type: integer
+          format: int64
+          example: 3
+    SharedTaskListResponse:
+      type: object
+      required:
+        - assignedTasks
+        - sharedTasks
+      properties:
+        assignedTasks:
+          type: array
+          items:
+            $ref: "#/components/schemas/TaskSummaryResponse"
+        sharedTasks:
+          type: array
+          items:
+            $ref: "#/components/schemas/TaskSummaryResponse"

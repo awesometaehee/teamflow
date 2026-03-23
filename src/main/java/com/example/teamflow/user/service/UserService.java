@@ -22,6 +22,15 @@ public class UserService {
                 .orElseThrow(() -> new UserNotFoundException(userId));
     }
 
+    @Transactional(readOnly = true)
+    public User getOptionalUser(Long userId) {
+        if (userId == null) {
+            return null;
+        }
+
+        return getRequiredUser(userId);
+    }
+
     public Long requireCurrentUserId(Long userIdHeader) {
         if (userIdHeader == null) {
             throw new UnauthorizedException("USER_CONTEXT_REQUIRED", "X-User-Id header is required");

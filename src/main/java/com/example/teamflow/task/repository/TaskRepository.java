@@ -1,14 +1,20 @@
 package com.example.teamflow.task.repository;
 
-import com.example.teamflow.task.entity.Task;
-import com.example.teamflow.task.entity.TaskStatus;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import com.example.teamflow.task.entity.Task;
+import com.example.teamflow.task.entity.TaskStatus;
+
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface TaskRepository extends JpaRepository<Task, Long> {
+
+    @EntityGraph(attributePaths = {"creator", "assignee", "shares", "shares.user"})
+    Optional<Task> findWithDetailsById(Long id);
 
     List<Task> findAllByCreatorIdOrderByCreatedAtDesc(Long creatorId);
 
@@ -34,4 +40,23 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
             order by t.dueAt asc, t.createdAt desc
             """)
     List<Task> findUpcomingTasks(Long creatorId, LocalDateTime start);
+
+    @EntityGraph(attributePaths = {"creator", "assignee", "shares", "shares.user"})
+    @Query("""
+            select distinct t
+            from Task t
+            where t.assignee.id = :userId
+            order by t.updatedAt desc
+            """)
+    List<Task> findAssignedTasks(Long userId);
+
+    @EntityGraph(attributePaths = {"creator", "assignee", "shares", "shares.user"})
+    @Query("""
+            select distinct t
+            from Task t
+            join t.shares s
+            where s.user.id = :userId
+            order by t.updatedAt desc
+            """)
+    List<Task> findSharedTasks(Long userId);
 }

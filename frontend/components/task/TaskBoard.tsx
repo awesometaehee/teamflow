@@ -2,11 +2,12 @@
 
 import { startTransition, useEffect, useState } from "react";
 import { FilterTabs } from "@/components/common/FilterTabs";
+import { TaskDetailDrawer } from "@/components/task/TaskDetailDrawer";
 import { QuickAddBar } from "@/components/task/QuickAddBar";
 import { TaskList } from "@/components/task/TaskList";
 import { createTask, getMyTasks } from "@/lib/api/tasks";
 import { ApiError } from "@/lib/api/client";
-import type { TaskFilter, TaskSummary } from "@/types/task";
+import type { TaskDetail, TaskFilter, TaskSummary } from "@/types/task";
 
 const emptyStateByFilter: Record<TaskFilter, string> = {
   today: "오늘 마감인 태스크가 없습니다. Quick Add로 첫 항목을 추가해 보세요.",
@@ -30,6 +31,7 @@ export function TaskBoard({
 }: TaskBoardProps) {
   const [activeFilter, setActiveFilter] = useState<TaskFilter>(initialFilter);
   const [tasks, setTasks] = useState<TaskSummary[]>([]);
+  const [selectedTask, setSelectedTask] = useState<TaskSummary | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
@@ -89,6 +91,35 @@ export function TaskBoard({
     }
   }
 
+  function handleTaskUpdated(task: TaskDetail) {
+    const summary: TaskSummary = {
+      id: task.id,
+      title: task.title,
+      description: task.description,
+      status: task.status,
+      dueAt: task.dueAt,
+      completedAt: task.completedAt,
+      createdAt: task.createdAt,
+      updatedAt: task.updatedAt,
+    };
+
+    setSelectedTask(summary);
+    setTasks((currentTasks) =>
+      currentTasks.map((currentTask) =>
+        currentTask.id === summary.id ? summary : currentTask,
+      ),
+    );
+
+    void refreshTasks(activeFilter);
+  }
+
+  function handleTaskDeleted(taskId: number) {
+    setTasks((currentTasks) =>
+      currentTasks.filter((currentTask) => currentTask.id !== taskId),
+    );
+    setSelectedTask(null);
+  }
+
   async function refreshTasks(filter: TaskFilter) {
     setIsLoading(true);
     setErrorMessage("");
@@ -129,11 +160,19 @@ export function TaskBoard({
             isLoading={isLoading}
             errorMessage={errorMessage}
             emptyMessage={emptyStateByFilter[activeFilter]}
+            onSelectTask={setSelectedTask}
           />
         </div>
       </div>
 
       {showQuickAdd ? <QuickAddBar onCreate={handleCreate} /> : null}
+
+      <TaskDetailDrawer
+        selectedTask={selectedTask}
+        onClose={() => setSelectedTask(null)}
+        onTaskUpdated={handleTaskUpdated}
+        onTaskDeleted={handleTaskDeleted}
+      />
     </section>
   );
 }

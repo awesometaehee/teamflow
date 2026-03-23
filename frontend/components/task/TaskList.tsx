@@ -6,6 +6,7 @@ type TaskListProps = {
   isLoading: boolean;
   errorMessage: string;
   emptyMessage: string;
+  onSelectTask: (task: TaskSummary) => void;
 };
 
 export function TaskList({
@@ -13,6 +14,7 @@ export function TaskList({
   isLoading,
   errorMessage,
   emptyMessage,
+  onSelectTask,
 }: TaskListProps) {
   if (isLoading) {
     return (
@@ -41,7 +43,7 @@ export function TaskList({
   return (
     <ul className="space-y-3">
       {tasks.map((task) => (
-        <TaskItem key={task.id} task={task} />
+        <TaskItem key={task.id} task={task} onClick={onSelectTask} />
       ))}
     </ul>
   );

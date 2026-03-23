@@ -21,11 +21,17 @@ const statusLabel = {
 
 type TaskItemProps = {
   task: TaskSummary;
+  onClick: (task: TaskSummary) => void;
 };
 
-export function TaskItem({ task }: TaskItemProps) {
+export function TaskItem({ task, onClick }: TaskItemProps) {
   return (
-    <li className="rounded-2xl border border-[var(--color-line)] bg-[var(--color-surface)] px-5 py-4">
+    <li>
+      <button
+        type="button"
+        onClick={() => onClick(task)}
+        className="w-full rounded-2xl border border-[var(--color-line)] bg-[var(--color-surface)] px-5 py-4 text-left transition hover:border-[var(--color-accent)] hover:bg-white"
+      >
       <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
@@ -43,6 +49,7 @@ export function TaskItem({ task }: TaskItemProps) {
           Due {formatDateLabel(task.dueAt)}
         </div>
       </div>
+      </button>
     </li>
   );
 }
