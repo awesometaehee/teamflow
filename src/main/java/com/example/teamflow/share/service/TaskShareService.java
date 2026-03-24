@@ -3,6 +3,7 @@ package com.example.teamflow.share.service;
 import com.example.teamflow.comment.repository.TaskCommentRepository;
 import com.example.teamflow.common.exception.BadRequestException;
 import com.example.teamflow.common.exception.ForbiddenException;
+import com.example.teamflow.notification.service.NotificationService;
 import com.example.teamflow.share.dto.request.TaskShareCreateRequest;
 import com.example.teamflow.share.dto.response.SharedTaskListResponse;
 import com.example.teamflow.share.repository.TaskShareRepository;
@@ -26,17 +27,20 @@ public class TaskShareService {
     private final TaskShareRepository taskShareRepository;
     private final UserService userService;
     private final TaskCommentRepository taskCommentRepository;
+    private final NotificationService notificationService;
 
     public TaskShareService(
             TaskRepository taskRepository,
             TaskShareRepository taskShareRepository,
             UserService userService,
-            TaskCommentRepository taskCommentRepository
+            TaskCommentRepository taskCommentRepository,
+            NotificationService notificationService
     ) {
         this.taskRepository = taskRepository;
         this.taskShareRepository = taskShareRepository;
         this.userService = userService;
         this.taskCommentRepository = taskCommentRepository;
+        this.notificationService = notificationService;
     }
 
     @Transactional
@@ -53,6 +57,7 @@ public class TaskShareService {
         }
 
         task.addShare(sharedUser);
+        notificationService.notifyShared(task, userService.getRequiredUser(userId), sharedUser);
         return TaskDetailResponse.from(task, getCommentCount(task.getId()));
     }
 

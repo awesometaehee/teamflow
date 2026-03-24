@@ -29,3 +29,11 @@ VALUES
     (3, 4, 2, 'Draft first, then share with Alice for review.', DATEADD('HOUR', 15, CURRENT_DATE));
 
 ALTER TABLE task_comments ALTER COLUMN id RESTART WITH 4;
+
+INSERT INTO notifications (id, recipient_id, task_id, type, message, read, created_at)
+VALUES
+    (1, 1, 4, 'SHARED', 'Bob Lee shared "Write Bob onboarding draft" with you', FALSE, DATEADD('HOUR', 16, CURRENT_DATE)),
+    (2, 2, 2, 'ASSIGNED', 'Alice Kim assigned you to "Review shared workflow"', TRUE, DATEADD('HOUR', 17, CURRENT_DATE)),
+    (3, 3, 2, 'COMMENTED', 'Alice Kim commented on "Review shared workflow"', FALSE, DATEADD('HOUR', 18, CURRENT_DATE));
+
+ALTER TABLE notifications ALTER COLUMN id RESTART WITH 4;

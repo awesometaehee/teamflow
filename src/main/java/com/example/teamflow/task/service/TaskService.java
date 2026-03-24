@@ -2,6 +2,7 @@ package com.example.teamflow.task.service;
 
 import com.example.teamflow.comment.repository.TaskCommentRepository;
 import com.example.teamflow.common.exception.ForbiddenException;
+import com.example.teamflow.notification.service.NotificationService;
 import com.example.teamflow.task.dto.request.TaskCreateRequest;
 import com.example.teamflow.task.dto.request.TaskStatusUpdateRequest;
 import com.example.teamflow.task.dto.request.TaskUpdateRequest;
@@ -27,11 +28,18 @@ public class TaskService {
     private final TaskRepository taskRepository;
     private final UserService userService;
     private final TaskCommentRepository taskCommentRepository;
+    private final NotificationService notificationService;
 
-    public TaskService(TaskRepository taskRepository, UserService userService, TaskCommentRepository taskCommentRepository) {
+    public TaskService(
+            TaskRepository taskRepository,
+            UserService userService,
+            TaskCommentRepository taskCommentRepository,
+            NotificationService notificationService
+    ) {
         this.taskRepository = taskRepository;
         this.userService = userService;
         this.taskCommentRepository = taskCommentRepository;
+        this.notificationService = notificationService;
     }
 
     @Transactional
@@ -84,6 +92,8 @@ public class TaskService {
         Long userId = userService.requireCurrentUserId(currentUserId);
         Task task = getTaskOrThrow(taskId);
         assertCreator(task, userId);
+        User actor = userService.getRequiredUser(userId);
+        User previousAssignee = task.getAssignee();
 
         User assignee = userService.getOptionalUser(request.assigneeId());
         task.update(
@@ -92,6 +102,7 @@ public class TaskService {
                 request.dueAt(),
                 assignee
         );
+        notificationService.notifyAssignee(task, actor, previousAssignee, assignee);
 
         return TaskDetailResponse.from(task, getCommentCount(task.getId()));
     }

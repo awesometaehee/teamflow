@@ -19,6 +19,8 @@ tags:
     description: Task sharing and assigned/shared task listing endpoints
   - name: Comments
     description: Task comment creation and listing endpoints
+  - name: Notifications
+    description: Notification listing and read-status endpoints
 paths:
   /api/health:
     get:
@@ -479,6 +481,63 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+  /api/notifications:
+    get:
+      tags:
+        - Notifications
+      summary: Get notifications for the current user
+      operationId: getNotifications
+      parameters:
+        - $ref: "#/components/parameters/XUserIdHeader"
+      responses:
+        "200":
+          description: Notification list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/NotificationResponse"
+        "401":
+          description: Current user header missing
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /api/notifications/{notificationId}/read:
+    patch:
+      tags:
+        - Notifications
+      summary: Mark a notification as read
+      operationId: markNotificationRead
+      parameters:
+        - $ref: "#/components/parameters/XUserIdHeader"
+        - name: notificationId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+            example: 1
+      responses:
+        "200":
+          description: Notification updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationResponse"
+        "401":
+          description: Current user header missing
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Notification not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 components:
   parameters:
     XUserIdHeader:
@@ -817,3 +876,40 @@ components:
           format: date-time
         author:
           $ref: "#/components/schemas/TaskUserResponse"
+    NotificationResponse:
+      type: object
+      required:
+        - id
+        - taskId
+        - taskTitle
+        - type
+        - message
+        - read
+        - createdAt
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        taskId:
+          type: integer
+          format: int64
+          example: 2
+        taskTitle:
+          type: string
+          example: Review shared workflow
+        type:
+          type: string
+          enum:
+            - ASSIGNED
+            - SHARED
+            - COMMENTED
+        message:
+          type: string
+          example: Alice Kim commented on "Review shared workflow"
+        read:
+          type: boolean
+          example: false
+        createdAt:
+          type: string
+          format: date-time

@@ -4,6 +4,7 @@ import com.example.teamflow.comment.dto.request.TaskCommentCreateRequest;
 import com.example.teamflow.comment.dto.response.TaskCommentResponse;
 import com.example.teamflow.comment.entity.TaskComment;
 import com.example.teamflow.comment.repository.TaskCommentRepository;
+import com.example.teamflow.notification.service.NotificationService;
 import com.example.teamflow.task.entity.Task;
 import com.example.teamflow.task.service.TaskService;
 import com.example.teamflow.user.entity.User;
@@ -22,11 +23,18 @@ public class TaskCommentService {
     private final TaskCommentRepository taskCommentRepository;
     private final TaskService taskService;
     private final UserService userService;
+    private final NotificationService notificationService;
 
-    public TaskCommentService(TaskCommentRepository taskCommentRepository, TaskService taskService, UserService userService) {
+    public TaskCommentService(
+            TaskCommentRepository taskCommentRepository,
+            TaskService taskService,
+            UserService userService,
+            NotificationService notificationService
+    ) {
         this.taskCommentRepository = taskCommentRepository;
         this.taskService = taskService;
         this.userService = userService;
+        this.notificationService = notificationService;
     }
 
     @Transactional
@@ -35,7 +43,9 @@ public class TaskCommentService {
         User author = userService.getRequiredUser(userService.requireCurrentUserId(currentUserId));
 
         TaskComment comment = new TaskComment(task, author, request.content().trim());
-        return TaskCommentResponse.from(taskCommentRepository.save(comment));
+        TaskComment savedComment = taskCommentRepository.save(comment);
+        notificationService.notifyCommented(task, author);
+        return TaskCommentResponse.from(savedComment);
     }
 
     @Transactional(readOnly = true)

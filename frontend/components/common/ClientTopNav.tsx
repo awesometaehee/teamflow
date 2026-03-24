@@ -3,7 +3,11 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { NotificationPanel } from "@/components/notification/NotificationPanel";
+import { ApiError } from "@/lib/api/client";
+import { getNotifications } from "@/lib/api/notifications";
 import { clearSession, readSession } from "@/lib/session";
+import type { AppNotification } from "@/types/notification";
 import type { AuthSession } from "@/types/user";
 
 const navigationItems = [
@@ -21,17 +25,72 @@ export function ClientTopNav({ apiBaseUrl }: ClientTopNavProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [session, setSession] = useState<AuthSession | null>(null);
+  const [notifications, setNotifications] = useState<AppNotification[]>([]);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [isNotificationsLoading, setIsNotificationsLoading] = useState(false);
+  const [notificationError, setNotificationError] = useState("");
 
   useEffect(() => {
     setSession(readSession());
   }, [pathname]);
 
+  useEffect(() => {
+    if (!session) {
+      setNotifications([]);
+      setNotificationError("");
+      return;
+    }
+
+    void refreshNotifications();
+
+    const intervalId = window.setInterval(() => {
+      void refreshNotifications();
+    }, 30000);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, [session?.user.id, pathname]);
+
   function handleLogout() {
     clearSession();
     setSession(null);
+    setNotifications([]);
     router.replace("/login");
     router.refresh();
   }
+
+  async function refreshNotifications() {
+    if (!readSession()) {
+      return;
+    }
+
+    setIsNotificationsLoading(true);
+    setNotificationError("");
+
+    try {
+      const nextNotifications = await getNotifications();
+      setNotifications(nextNotifications);
+    } catch (error) {
+      if (error instanceof ApiError) {
+        setNotificationError(error.details[0] ?? error.message);
+      } else {
+        setNotificationError("알림을 불러오지 못했습니다.");
+      }
+    } finally {
+      setIsNotificationsLoading(false);
+    }
+  }
+
+  function handleNotificationRead(updated: AppNotification) {
+    setNotifications((currentNotifications) =>
+      currentNotifications.map((notification) =>
+        notification.id === updated.id ? updated : notification,
+      ),
+    );
+  }
+
+  const unreadCount = notifications.filter((notification) => !notification.read).length;
 
   return (
     <header className="rounded-[32px] border border-[var(--color-line)] bg-[rgba(255,255,255,0.7)] px-5 py-4 shadow-[0_18px_60px_rgba(16,24,47,0.08)] backdrop-blur">
@@ -60,6 +119,24 @@ export function ClientTopNav({ apiBaseUrl }: ClientTopNavProps) {
 
           {session ? (
             <div className="flex flex-wrap items-center gap-3 text-sm">
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setIsNotificationOpen((current) => !current)}
+                  className="rounded-full border border-[var(--color-line)] bg-white px-3 py-1 font-semibold text-[var(--color-ink-soft)] transition hover:bg-[var(--color-surface)]"
+                >
+                  Notifications{unreadCount > 0 ? ` (${unreadCount})` : ""}
+                </button>
+                {isNotificationOpen ? (
+                  <NotificationPanel
+                    notifications={notifications}
+                    errorMessage={notificationError}
+                    isLoading={isNotificationsLoading}
+                    onRefresh={() => void refreshNotifications()}
+                    onNotificationRead={handleNotificationRead}
+                  />
+                ) : null}
+              </div>
               <span className="rounded-full bg-[var(--color-surface)] px-3 py-1 font-medium text-[var(--color-ink)]">
                 {session.user.name}
               </span>
