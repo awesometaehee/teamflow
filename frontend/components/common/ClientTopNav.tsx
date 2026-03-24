@@ -11,10 +11,10 @@ import type { AppNotification } from "@/types/notification";
 import type { AuthSession } from "@/types/user";
 
 const navigationItems = [
-  { href: "/", label: "Home" },
-  { href: "/login", label: "Login" },
-  { href: "/my-tasks", label: "My Tasks" },
-  { href: "/shared", label: "Shared" },
+  { href: "/", label: "홈" },
+  { href: "/login", label: "로그인" },
+  { href: "/my-tasks", label: "내 태스크" },
+  { href: "/shared", label: "공유 보드" },
 ];
 
 type ClientTopNavProps = {
@@ -93,18 +93,18 @@ export function ClientTopNav({ apiBaseUrl }: ClientTopNavProps) {
   const unreadCount = notifications.filter((notification) => !notification.read).length;
 
   return (
-    <header className="rounded-[32px] border border-[var(--color-line)] bg-[rgba(255,255,255,0.7)] px-5 py-4 shadow-[0_18px_60px_rgba(16,24,47,0.08)] backdrop-blur">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <div>
-          <Link href="/" className="text-2xl font-semibold tracking-[-0.04em]">
-            TeamFlow
-          </Link>
-          <p className="mt-1 text-sm text-[var(--color-ink-soft)]">
-            Personal-first task flow with lightweight team sharing
-          </p>
-        </div>
+    <header className="rounded-[34px] border border-[var(--color-line)] bg-[rgba(255,255,255,0.92)] px-5 py-4 shadow-[0_28px_80px_var(--color-shadow)] backdrop-blur md:px-7">
+      <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
+        <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:gap-8">
+          <div>
+            <Link href="/" className="text-[2rem] font-semibold tracking-[-0.05em] text-[var(--color-ink)]">
+              TeamFlow
+            </Link>
+            <p className="mt-1 text-sm text-[var(--color-ink-soft)]">
+              태스크, 공유, 댓글, 알림을 한눈에 정리하는 가벼운 협업 워크스페이스
+            </p>
+          </div>
 
-        <div className="flex flex-col items-start gap-3 lg:items-end">
           <nav className="flex flex-wrap items-center gap-2">
             {navigationItems.map((item) => (
               <Link
@@ -116,16 +116,18 @@ export function ClientTopNav({ apiBaseUrl }: ClientTopNavProps) {
               </Link>
             ))}
           </nav>
+        </div>
 
+        <div className="flex flex-col items-start gap-3 xl:items-end">
           {session ? (
             <div className="flex flex-wrap items-center gap-3 text-sm">
               <div className="relative">
                 <button
                   type="button"
                   onClick={() => setIsNotificationOpen((current) => !current)}
-                  className="rounded-full border border-[var(--color-line)] bg-white px-3 py-1 font-semibold text-[var(--color-ink-soft)] transition hover:bg-[var(--color-surface)]"
+                  className="rounded-full border border-[var(--color-line)] bg-[var(--color-surface)] px-4 py-2 font-semibold text-[var(--color-ink)] transition hover:border-[var(--color-line-strong)] hover:bg-white"
                 >
-                  Notifications{unreadCount > 0 ? ` (${unreadCount})` : ""}
+                  알림{unreadCount > 0 ? ` (${unreadCount})` : ""}
                 </button>
                 {isNotificationOpen ? (
                   <NotificationPanel
@@ -137,15 +139,15 @@ export function ClientTopNav({ apiBaseUrl }: ClientTopNavProps) {
                   />
                 ) : null}
               </div>
-              <span className="rounded-full bg-[var(--color-surface)] px-3 py-1 font-medium text-[var(--color-ink)]">
+              <span className="rounded-full bg-[var(--color-accent-soft)] px-4 py-2 font-semibold text-[var(--color-accent-strong)]">
                 {session.user.name}
               </span>
               <button
                 type="button"
                 onClick={handleLogout}
-                className="rounded-full border border-[var(--color-line)] px-3 py-1 font-semibold text-[var(--color-ink-soft)] transition hover:bg-[var(--color-surface)]"
+                className="rounded-full border border-[var(--color-line)] px-4 py-2 font-semibold text-[var(--color-ink-soft)] transition hover:bg-[var(--color-surface)]"
               >
-                Logout
+                로그아웃
               </button>
             </div>
           ) : (
@@ -156,15 +158,15 @@ export function ClientTopNav({ apiBaseUrl }: ClientTopNavProps) {
         </div>
       </div>
 
-      <div className="mt-4 flex flex-col gap-2 border-t border-[var(--color-line)] pt-4 text-sm text-[var(--color-ink-soft)] md:flex-row md:items-center md:justify-between">
-        <span>
+      <div className="mt-5 grid gap-3 border-t border-[var(--color-line)] pt-4 text-sm text-[var(--color-ink-soft)] lg:grid-cols-[1.6fr_0.8fr]">
+        <div className="rounded-[24px] bg-[var(--color-surface)] px-4 py-3">
           {session
-            ? "세션이 로컬에 저장되어 있으며 브라우저 새로고침 후에도 유지됩니다."
+            ? "로컬 세션 기반으로 보호 페이지에 접근 중입니다. 알림은 30초 간격으로 재조회됩니다."
             : "로그인 페이지에서 샘플 계정으로 세션을 만들 수 있습니다."}
-        </span>
-        <span className="rounded-full bg-[var(--color-surface)] px-3 py-1 font-medium">
+        </div>
+        <div className="rounded-[24px] bg-[var(--color-surface)] px-4 py-3 font-medium">
           API Base URL: {apiBaseUrl}
-        </span>
+        </div>
       </div>
     </header>
   );

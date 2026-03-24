@@ -14,9 +14,9 @@ type NotificationPanelProps = {
 };
 
 const typeLabel = {
-  ASSIGNED: "Assigned",
-  SHARED: "Shared",
-  COMMENTED: "Commented",
+  ASSIGNED: "담당 지정",
+  SHARED: "공유",
+  COMMENTED: "댓글",
 } as const;
 
 export function NotificationPanel({
@@ -41,40 +41,40 @@ export function NotificationPanel({
   }
 
   return (
-    <div className="absolute right-0 top-[calc(100%+12px)] z-50 w-full max-w-md rounded-[28px] border border-[var(--color-line)] bg-[rgba(255,255,255,0.96)] p-4 shadow-[0_24px_80px_rgba(16,24,47,0.18)] backdrop-blur">
-      <div className="flex items-center justify-between gap-3 border-b border-[var(--color-line)] pb-3">
+    <div className="absolute right-0 top-[calc(100%+14px)] z-50 w-full max-w-md rounded-[30px] border border-[var(--color-line)] bg-[rgba(255,255,255,0.98)] p-4 shadow-[0_30px_80px_rgba(15,23,47,0.18)] backdrop-blur">
+      <div className="flex items-center justify-between gap-3 border-b border-[var(--color-line)] pb-4">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--color-ink-soft)]">
-            Notifications
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--color-accent)]">
+            알림
           </p>
           <p className="mt-1 text-sm text-[var(--color-ink-soft)]">
-            30초마다 다시 확인합니다.
+            담당자 변경, 공유, 댓글 같은 활동을 한곳에서 확인합니다.
           </p>
         </div>
         <button
           type="button"
           onClick={onRefresh}
-          className="rounded-full border border-[var(--color-line)] px-3 py-1 text-xs font-semibold text-[var(--color-ink-soft)] transition hover:bg-[var(--color-surface)]"
+          className="rounded-full border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-1.5 text-xs font-semibold text-[var(--color-ink)] transition hover:bg-white"
         >
-          Refresh
+          새로고침
         </button>
       </div>
 
       <div className="mt-4 max-h-[420px] space-y-3 overflow-y-auto pr-1">
         {isLoading ? (
-          <div className="rounded-2xl border border-[var(--color-line)] bg-[var(--color-surface)] px-4 py-5 text-sm text-[var(--color-ink-soft)]">
+          <div className="rounded-[24px] border border-[var(--color-line)] bg-[var(--color-surface)] px-4 py-5 text-sm text-[var(--color-ink-soft)]">
             알림을 불러오는 중입니다.
           </div>
         ) : null}
 
         {!isLoading && errorMessage ? (
-          <div className="rounded-2xl border border-[#ef9a9a] bg-[#fff1f2] px-4 py-4 text-sm text-[#9f1239]">
+          <div className="rounded-[24px] border border-[#ef9a9a] bg-[#fff1f2] px-4 py-4 text-sm text-[#9f1239]">
             {errorMessage}
           </div>
         ) : null}
 
         {!isLoading && !errorMessage && notifications.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-[var(--color-line)] px-4 py-5 text-sm text-[var(--color-ink-soft)]">
+          <div className="rounded-[24px] border border-dashed border-[var(--color-line)] px-4 py-5 text-sm text-[var(--color-ink-soft)]">
             아직 알림이 없습니다.
           </div>
         ) : null}
@@ -85,12 +85,12 @@ export function NotificationPanel({
                 key={notification.id}
                 className={
                   notification.read
-                    ? "rounded-2xl border border-[var(--color-line)] bg-[var(--color-surface)] px-4 py-4"
-                    : "rounded-2xl border border-[var(--color-accent)] bg-[rgba(194,65,12,0.06)] px-4 py-4"
+                    ? "rounded-[24px] border border-[var(--color-line)] bg-[var(--color-surface)] px-4 py-4"
+                    : "rounded-[24px] border border-[var(--color-line-strong)] bg-[var(--color-accent-soft)] px-4 py-4"
                 }
               >
                 <div className="flex items-center justify-between gap-3">
-                  <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-[var(--color-ink-soft)]">
+                  <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-[var(--color-accent-strong)]">
                     {typeLabel[notification.type]}
                   </span>
                   <span className="text-xs text-[var(--color-ink-soft)]">
@@ -107,21 +107,21 @@ export function NotificationPanel({
 
                 <div className="mt-3 flex items-center justify-between gap-3">
                   <Link
-                    href={`/my-tasks`}
+                    href="/my-tasks"
                     className="text-xs font-semibold text-[var(--color-accent)] transition hover:opacity-80"
                   >
-                    Open Task
+                    작업 공간 열기
                   </Link>
                   {!notification.read ? (
                     <button
                       type="button"
                       onClick={() => void handleRead(notification)}
-                      className="rounded-full border border-[var(--color-line)] px-3 py-1 text-xs font-semibold text-[var(--color-ink-soft)] transition hover:bg-white"
+                      className="rounded-full border border-[var(--color-line)] bg-white px-3 py-1 text-xs font-semibold text-[var(--color-ink)] transition hover:border-[var(--color-line-strong)]"
                     >
-                      Mark Read
+                      읽음 처리
                     </button>
                   ) : (
-                    <span className="text-xs font-semibold text-[var(--color-ink-soft)]">Read</span>
+                    <span className="text-xs font-semibold text-[var(--color-ink-soft)]">읽음</span>
                   )}
                 </div>
               </div>

@@ -16,9 +16,9 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body>
-        <div className="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 py-6 md:px-6">
+        <div className="mx-auto flex min-h-screen w-full max-w-[1240px] flex-col px-4 py-5 md:px-8 md:py-8">
           <ClientTopNav apiBaseUrl={apiBaseUrl} />
-          <main className="flex-1 py-6">{children}</main>
+          <main className="flex-1 py-8">{children}</main>
         </div>
       </body>
     </html>

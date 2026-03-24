@@ -2,7 +2,7 @@ import type { TaskSummary } from "@/types/task";
 
 function formatDateLabel(value?: string | null) {
   if (!value) {
-    return "No due date";
+    return "마감일 없음";
   }
 
   return new Intl.DateTimeFormat("ko-KR", {
@@ -14,9 +14,9 @@ function formatDateLabel(value?: string | null) {
 }
 
 const statusLabel = {
-  TODO: "TODO",
-  IN_PROGRESS: "IN PROGRESS",
-  DONE: "DONE",
+  TODO: "할 일",
+  IN_PROGRESS: "진행 중",
+  DONE: "완료",
 } as const;
 
 type TaskItemProps = {
@@ -30,17 +30,17 @@ export function TaskItem({ task, onClick }: TaskItemProps) {
       <button
         type="button"
         onClick={() => onClick(task)}
-        className="w-full rounded-2xl border border-[var(--color-line)] bg-[var(--color-surface)] px-5 py-4 text-left transition hover:border-[var(--color-accent)] hover:bg-white"
+        className="w-full rounded-[28px] border border-[var(--color-line)] bg-white px-5 py-5 text-left shadow-[0_18px_44px_rgba(15,23,47,0.06)] transition hover:-translate-y-0.5 hover:border-[var(--color-line-strong)] hover:shadow-[0_24px_56px_rgba(0,107,255,0.12)]"
       >
         <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="rounded-full border border-[var(--color-line)] bg-white px-3 py-1 text-xs font-semibold tracking-[0.12em] text-[var(--color-ink-soft)]">
+              <span className="rounded-full bg-[var(--color-surface)] px-3 py-1 text-[11px] font-semibold tracking-[0.12em] text-[var(--color-accent-strong)]">
                 {statusLabel[task.status]}
               </span>
               <h3 className="text-base font-semibold text-[var(--color-ink)]">{task.title}</h3>
-              <span className="rounded-full bg-[rgba(16,24,47,0.06)] px-3 py-1 text-xs font-semibold text-[var(--color-ink-soft)]">
-                {task.commentCount} comments
+              <span className="rounded-full bg-[var(--color-accent-soft)] px-3 py-1 text-xs font-semibold text-[var(--color-accent-strong)]">
+                댓글 {task.commentCount}개
               </span>
             </div>
             {task.description ? (
@@ -49,7 +49,9 @@ export function TaskItem({ task, onClick }: TaskItemProps) {
           </div>
 
           <div className="text-sm text-[var(--color-ink-soft)]">
-            Due {formatDateLabel(task.dueAt)}
+            <div className="rounded-full bg-[var(--color-surface)] px-3 py-1.5 font-medium">
+              마감 {formatDateLabel(task.dueAt)}
+            </div>
           </div>
         </div>
       </button>

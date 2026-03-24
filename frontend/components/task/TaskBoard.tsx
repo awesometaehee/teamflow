@@ -16,6 +16,13 @@ const emptyStateByFilter: Record<TaskFilter, string> = {
   done: "완료된 태스크가 없습니다.",
 };
 
+const filterLabel: Record<TaskFilter, string> = {
+  today: "오늘",
+  upcoming: "예정",
+  all: "전체",
+  done: "완료",
+};
+
 type TaskBoardProps = {
   title: string;
   description: string;
@@ -141,21 +148,55 @@ export function TaskBoard({
 
   return (
     <section className="space-y-6">
-      <div className="rounded-[32px] border border-[var(--color-line)] bg-[rgba(255,255,255,0.78)] p-8 shadow-[0_24px_80px_rgba(16,24,47,0.08)]">
-        <div className="flex flex-col gap-4 border-b border-[var(--color-line)] pb-6 md:flex-row md:items-end md:justify-between">
+      <div className="overflow-hidden rounded-[36px] border border-[var(--color-line)] bg-white shadow-[0_32px_90px_var(--color-shadow)]">
+        <div className="border-b border-[var(--color-line)] bg-[linear-gradient(135deg,#ffffff_0%,#f1f7ff_55%,#e7f0ff_100%)] px-8 py-10">
+          <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
+            <div className="max-w-3xl">
+              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--color-accent)]">
+                TeamFlow 워크스페이스
+              </p>
+              <h1 className="mt-3 text-4xl font-semibold tracking-[-0.05em]">{title}</h1>
+              <p className="mt-4 max-w-2xl text-base leading-7 text-[var(--color-ink-soft)]">
+                {description}
+              </p>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-3">
+              <div className="rounded-[24px] border border-[var(--color-line)] bg-white/80 px-4 py-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--color-ink-muted)]">
+                  현재 필터
+                </p>
+                <p className="mt-2 text-lg font-semibold text-[var(--color-ink)]">{filterLabel[activeFilter]}</p>
+              </div>
+              <div className="rounded-[24px] border border-[var(--color-line)] bg-white/80 px-4 py-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--color-ink-muted)]">
+                  현재 보이는 태스크
+                </p>
+                <p className="mt-2 text-lg font-semibold text-[var(--color-ink)]">{tasks.length}</p>
+              </div>
+              <div className="rounded-[24px] border border-[var(--color-accent)] bg-[var(--color-accent)] px-4 py-4 text-white">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/70">
+                  흐름
+                </p>
+                <p className="mt-2 text-lg font-semibold">등록, 공유, 알림</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-4 px-8 py-6 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[var(--color-ink-soft)]">
-              Phase 2
+              필터 기준 태스크 목록
             </p>
-            <h1 className="mt-2 text-3xl font-semibold tracking-[-0.03em]">{title}</h1>
-            <p className="mt-3 max-w-2xl text-base leading-7 text-[var(--color-ink-soft)]">
-              {description}
+            <p className="mt-2 text-sm text-[var(--color-ink-soft)]">
+              페이지 이동 없이 관점을 바꿔가며 작업을 확인합니다.
             </p>
           </div>
           <FilterTabs activeFilter={activeFilter} onChange={setActiveFilter} />
         </div>
 
-        <div className="mt-6">
+        <div className="px-8 pb-8">
           <TaskList
             tasks={tasks}
             isLoading={isLoading}

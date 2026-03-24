@@ -1,14 +1,18 @@
 @import "tailwindcss";
 
 :root {
-  --color-ink: #10182f;
-  --color-ink-soft: #51607d;
-  --color-surface: #f7f7f2;
+  --color-ink: #0f172f;
+  --color-ink-soft: #5f6b85;
+  --color-ink-muted: #8290ad;
+  --color-surface: #f3f7ff;
   --color-surface-strong: #ffffff;
-  --color-accent: #1f6feb;
-  --color-accent-soft: #dbeafe;
-  --color-line: #d6deeb;
-  --color-highlight: #f4b942;
+  --color-surface-soft: #e9f1ff;
+  --color-accent: #006bff;
+  --color-accent-strong: #0047d6;
+  --color-accent-soft: #dfeaff;
+  --color-line: #dbe6fb;
+  --color-line-strong: #bfd1f8;
+  --color-shadow: rgba(19, 39, 82, 0.12);
 }
 
 * {
@@ -16,7 +20,7 @@
 }
 
 html {
-  background: linear-gradient(180deg, #f1efe7 0%, #eef4ff 100%);
+  background: #f7faff;
 }
 
 body {
@@ -24,10 +28,10 @@ body {
   min-height: 100vh;
   color: var(--color-ink);
   background:
-    radial-gradient(circle at top left, rgba(244, 185, 66, 0.18), transparent 28%),
-    radial-gradient(circle at right center, rgba(31, 111, 235, 0.16), transparent 30%),
-    linear-gradient(180deg, #f8f6ef 0%, #edf4ff 100%);
-  font-family: Georgia, "Times New Roman", serif;
+    radial-gradient(circle at top left, rgba(0, 107, 255, 0.1), transparent 28%),
+    radial-gradient(circle at top right, rgba(126, 168, 255, 0.18), transparent 32%),
+    linear-gradient(180deg, #f7faff 0%, #eef4ff 48%, #f8fbff 100%);
+  font-family: "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
 a {
@@ -36,6 +40,11 @@ a {
 }
 
 button,
-input {
+input,
+textarea {
   font: inherit;
+}
+
+::selection {
+  background: rgba(0, 107, 255, 0.16);
 }

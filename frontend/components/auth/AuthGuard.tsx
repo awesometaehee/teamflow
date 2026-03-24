@@ -28,7 +28,7 @@ export function AuthGuard({ children }: AuthGuardProps) {
 
   if (!ready || !session) {
     return (
-      <section className="rounded-[32px] border border-[var(--color-line)] bg-[rgba(255,255,255,0.72)] p-8 text-sm text-[var(--color-ink-soft)] shadow-[0_18px_60px_rgba(16,24,47,0.08)]">
+      <section className="rounded-[32px] border border-[var(--color-line)] bg-white p-8 text-sm text-[var(--color-ink-soft)] shadow-[0_24px_70px_var(--color-shadow)]">
         로그인 상태를 확인하는 중입니다.
       </section>
     );

@@ -63,19 +63,22 @@ export function LoginForm() {
   }
 
   return (
-    <div className="grid gap-6 md:grid-cols-[1fr_420px]">
-      <div className="rounded-[28px] border border-[var(--color-line)] bg-[rgba(255,255,255,0.7)] p-8">
-        <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[var(--color-ink-soft)]">
-          Simple Login
-        </p>
-        <h1 className="mt-4 text-4xl font-semibold tracking-[-0.03em]">
-          내부 샘플 계정으로 바로 로그인해 TeamFlow 흐름을 확인할 수 있다.
-        </h1>
-        <p className="mt-4 text-base leading-7 text-[var(--color-ink-soft)]">
-          MVP 단계에서는 경량 세션 방식을 사용한다. 로그인에 성공하면 클라이언트에 세션 정보를 저장하고 보호 페이지 접근에 사용한다.
-        </p>
+    <div className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
+      <div className="overflow-hidden rounded-[36px] border border-[var(--color-line)] bg-white shadow-[0_32px_90px_var(--color-shadow)]">
+        <div className="bg-[linear-gradient(135deg,#ffffff_0%,#f1f7ff_55%,#e7f0ff_100%)] px-8 py-10">
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--color-accent)]">
+            태스크를 위한 가벼운 협업 흐름
+          </p>
+          <h1 className="mt-3 max-w-2xl text-5xl font-semibold tracking-[-0.06em] text-[var(--color-ink)]">
+            미팅을 예약하듯 차분하게 태스크를 정리합니다.
+          </h1>
+          <p className="mt-5 max-w-xl text-base leading-7 text-[var(--color-ink-soft)]">
+            TeamFlow는 흐름을 가볍게 유지합니다. 로그인하고, 일을 기록하고, 담당자를 정하고, 맥락을 공유하고,
+            업데이트를 한 화면에서 따라갑니다.
+          </p>
+        </div>
 
-        <div className="mt-8 space-y-3">
+        <div className="grid gap-4 px-8 py-8 md:grid-cols-3">
           {sampleAccounts.map((account) => (
             <button
               key={account.email}
@@ -85,10 +88,10 @@ export function LoginForm() {
                 setPassword(account.password);
                 setErrorMessage("");
               }}
-              className="flex w-full items-center justify-between rounded-2xl border border-[var(--color-line)] bg-[var(--color-surface)] px-4 py-3 text-left transition hover:border-[var(--color-accent)] hover:bg-white"
+              className="rounded-[26px] border border-[var(--color-line)] bg-[var(--color-surface)] px-5 py-5 text-left transition hover:border-[var(--color-line-strong)] hover:bg-white"
             >
-              <span className="font-semibold">{account.label}</span>
-              <span className="text-sm text-[var(--color-ink-soft)]">{account.email}</span>
+              <p className="text-sm font-semibold text-[var(--color-ink)]">{account.label}</p>
+              <p className="mt-2 text-sm text-[var(--color-ink-soft)]">{account.email}</p>
             </button>
           ))}
         </div>
@@ -96,9 +99,20 @@ export function LoginForm() {
 
       <form
         onSubmit={handleSubmit}
-        className="rounded-[28px] border border-[var(--color-line)] bg-[var(--color-surface-strong)] p-8 shadow-[0_18px_60px_rgba(16,24,47,0.08)]"
+        className="rounded-[36px] border border-[var(--color-line)] bg-white p-8 shadow-[0_32px_90px_var(--color-shadow)]"
       >
-        <div className="space-y-4">
+        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--color-accent)]">
+          로그인
+        </p>
+        <h2 className="mt-3 text-3xl font-semibold tracking-[-0.05em] text-[var(--color-ink)]">
+          샘플 계정으로 바로 워크스페이스를 시작합니다.
+        </h2>
+        <p className="mt-3 text-sm leading-6 text-[var(--color-ink-soft)]">
+          MVP 단계에서는 경량 세션 방식을 사용합니다. 로그인하면 보호 페이지와 협업 흐름 전체를 바로 확인할 수
+          있습니다.
+        </p>
+
+        <div className="mt-8 space-y-4">
           <div>
             <label htmlFor="email" className="mb-2 block text-sm font-semibold text-[var(--color-ink-soft)]">
               Email
@@ -109,7 +123,7 @@ export function LoginForm() {
               onChange={(event) => setEmail(event.target.value)}
               placeholder="alice@example.com"
               autoComplete="email"
-              className="w-full rounded-2xl border border-[var(--color-line)] bg-[var(--color-surface)] px-4 py-3 text-sm outline-none transition focus:border-[var(--color-accent)]"
+              className="w-full rounded-[22px] border border-[var(--color-line)] bg-[var(--color-surface)] px-4 py-3.5 text-sm outline-none transition focus:border-[var(--color-line-strong)] focus:bg-white"
             />
           </div>
           <div>
@@ -123,12 +137,12 @@ export function LoginForm() {
               onChange={(event) => setPassword(event.target.value)}
               placeholder="password123"
               autoComplete="current-password"
-              className="w-full rounded-2xl border border-[var(--color-line)] bg-[var(--color-surface)] px-4 py-3 text-sm outline-none transition focus:border-[var(--color-accent)]"
+              className="w-full rounded-[22px] border border-[var(--color-line)] bg-[var(--color-surface)] px-4 py-3.5 text-sm outline-none transition focus:border-[var(--color-line-strong)] focus:bg-white"
             />
           </div>
 
           {errorMessage ? (
-            <div className="rounded-2xl border border-[#ef9a9a] bg-[#fff1f2] px-4 py-3 text-sm text-[#9f1239]">
+            <div className="rounded-[22px] border border-[#ef9a9a] bg-[#fff1f2] px-4 py-3 text-sm text-[#9f1239]">
               {errorMessage}
             </div>
           ) : null}
@@ -136,9 +150,9 @@ export function LoginForm() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full rounded-2xl bg-[var(--color-accent)] px-4 py-3 text-sm font-semibold text-white transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-70"
+            className="w-full rounded-[22px] bg-[var(--color-accent)] px-4 py-4 text-sm font-semibold text-white shadow-[0_18px_32px_rgba(0,107,255,0.24)] transition hover:bg-[var(--color-accent-strong)] disabled:cursor-not-allowed disabled:opacity-70"
           >
-            {isSubmitting ? "Signing In..." : "Sign In"}
+            {isSubmitting ? "로그인 중..." : "워크스페이스 들어가기"}
           </button>
         </div>
       </form>
