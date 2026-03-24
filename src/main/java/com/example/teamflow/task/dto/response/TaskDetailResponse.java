@@ -15,11 +15,12 @@ public record TaskDetailResponse(
         LocalDateTime completedAt,
         LocalDateTime createdAt,
         LocalDateTime updatedAt,
+        long commentCount,
         TaskUserResponse creator,
         TaskUserResponse assignee,
         List<TaskUserResponse> sharedUsers
 ) {
-    public static TaskDetailResponse from(Task task) {
+    public static TaskDetailResponse from(Task task, long commentCount) {
         return new TaskDetailResponse(
                 task.getId(),
                 task.getTitle(),
@@ -29,6 +30,7 @@ public record TaskDetailResponse(
                 task.getCompletedAt(),
                 task.getCreatedAt(),
                 task.getUpdatedAt(),
+                commentCount,
                 TaskUserResponse.from(task.getCreator()),
                 task.getAssignee() == null ? null : TaskUserResponse.from(task.getAssignee()),
                 task.getShares().stream()

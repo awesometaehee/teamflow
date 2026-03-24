@@ -101,6 +101,7 @@ export function TaskBoard({
       completedAt: task.completedAt,
       createdAt: task.createdAt,
       updatedAt: task.updatedAt,
+      commentCount: task.commentCount,
     };
 
     setSelectedTask(summary);

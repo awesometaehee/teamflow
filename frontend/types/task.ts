@@ -9,6 +9,7 @@ export type TaskSummary = {
   completedAt?: string | null;
   createdAt: string;
   updatedAt: string;
+  commentCount: number;
 };
 
 export type TaskUser = {
@@ -26,6 +27,7 @@ export type TaskDetail = {
   completedAt?: string | null;
   createdAt: string;
   updatedAt: string;
+  commentCount: number;
   creator: TaskUser;
   assignee?: TaskUser | null;
   sharedUsers: TaskUser[];

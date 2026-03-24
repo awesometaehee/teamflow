@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createTaskComment, getTaskComments } from "@/lib/api/comments";
 import { ApiError } from "@/lib/api/client";
 import { readSession } from "@/lib/session";
 import { addTaskShare, deleteTask, getTask, removeTaskShare, updateTask, updateTaskStatus } from "@/lib/api/tasks";
+import type { TaskComment } from "@/types/comment";
 import type { TaskDetail, TaskStatusUpdateRequest, TaskSummary, TaskUpdateRequest } from "@/types/task";
 
 type TaskDetailDrawerProps = {
@@ -33,9 +35,12 @@ export function TaskDetailDrawer({
   const [dueAt, setDueAt] = useState("");
   const [assigneeId, setAssigneeId] = useState("");
   const [shareUserId, setShareUserId] = useState("");
+  const [comments, setComments] = useState<TaskComment[]>([]);
+  const [commentContent, setCommentContent] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [areCommentsLoading, setAreCommentsLoading] = useState(false);
   const session = readSession();
   const currentUserId = session?.user.id ?? null;
   const canManageShares = detail && currentUserId === detail.creator.id;
@@ -43,6 +48,7 @@ export function TaskDetailDrawer({
   useEffect(() => {
     if (!selectedTask) {
       setDetail(null);
+      setComments([]);
       setErrorMessage("");
       return;
     }
@@ -66,6 +72,7 @@ export function TaskDetailDrawer({
         setDueAt(toInputDateTime(nextDetail.dueAt));
         setAssigneeId(nextDetail.assignee ? String(nextDetail.assignee.id) : "");
         setShareUserId("");
+        setCommentContent("");
       } catch (error) {
         if (cancelled) {
           return;
@@ -83,7 +90,35 @@ export function TaskDetailDrawer({
       }
     }
 
+    async function loadComments() {
+      setAreCommentsLoading(true);
+
+      try {
+        const nextComments = await getTaskComments(taskId);
+        if (cancelled) {
+          return;
+        }
+
+        setComments(nextComments);
+      } catch (error) {
+        if (cancelled) {
+          return;
+        }
+
+        if (error instanceof ApiError) {
+          setErrorMessage(error.details[0] ?? error.message);
+        } else {
+          setErrorMessage("댓글을 불러오지 못했습니다.");
+        }
+      } finally {
+        if (!cancelled) {
+          setAreCommentsLoading(false);
+        }
+      }
+    }
+
     void loadDetail();
+    void loadComments();
 
     return () => {
       cancelled = true;
@@ -222,6 +257,38 @@ export function TaskDetailDrawer({
     }
   }
 
+  async function handleCreateComment() {
+    if (!detail || !commentContent.trim()) {
+      return;
+    }
+
+    setIsSaving(true);
+    setErrorMessage("");
+
+    try {
+      const createdComment = await createTaskComment(detail.id, {
+        content: commentContent,
+      });
+      const updatedDetail = {
+        ...detail,
+        commentCount: detail.commentCount + 1,
+      };
+
+      setComments((currentComments) => [...currentComments, createdComment]);
+      setCommentContent("");
+      setDetail(updatedDetail);
+      onTaskUpdated(updatedDetail);
+    } catch (error) {
+      if (error instanceof ApiError) {
+        setErrorMessage(error.details[0] ?? error.message);
+      } else {
+        setErrorMessage("댓글을 등록하지 못했습니다.");
+      }
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
   return (
     <div className="fixed inset-0 z-40 flex justify-end bg-[rgba(16,24,47,0.22)] backdrop-blur-[1px]">
       <div className="h-full w-full max-w-xl overflow-y-auto border-l border-[var(--color-line)] bg-[rgba(248,246,239,0.98)] p-6 shadow-[-24px_0_80px_rgba(16,24,47,0.12)]">
@@ -308,6 +375,7 @@ export function TaskDetailDrawer({
                     : "No shared users"}
                 </div>
                 <div>Status: {detail.status}</div>
+                <div>Comments: {detail.commentCount}</div>
                 <div>Completed At: {detail.completedAt ?? "Not completed"}</div>
               </div>
 
@@ -415,6 +483,78 @@ export function TaskDetailDrawer({
                     {status}
                   </button>
                 ))}
+              </div>
+            </div>
+
+            <div className="rounded-[28px] border border-[var(--color-line)] bg-white p-5">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--color-ink-soft)]">
+                    Comments
+                  </p>
+                  <p className="mt-2 text-sm text-[var(--color-ink-soft)]">
+                    작성자, 담당자, 공유 대상만 댓글을 남길 수 있습니다.
+                  </p>
+                </div>
+                <span className="rounded-full bg-[rgba(16,24,47,0.06)] px-3 py-1 text-xs font-semibold text-[var(--color-ink-soft)]">
+                  {detail.commentCount} total
+                </span>
+              </div>
+
+              <div className="mt-4 flex flex-col gap-3">
+                <textarea
+                  value={commentContent}
+                  onChange={(event) => setCommentContent(event.target.value)}
+                  rows={3}
+                  placeholder="진행 상황이나 맥락을 남겨두세요."
+                  className="w-full rounded-2xl border border-[var(--color-line)] bg-[var(--color-surface)] px-4 py-3 text-sm outline-none transition focus:border-[var(--color-accent)]"
+                />
+                <button
+                  type="button"
+                  onClick={handleCreateComment}
+                  disabled={isSaving || !commentContent.trim()}
+                  className="self-start rounded-2xl bg-[var(--color-accent)] px-4 py-3 text-sm font-semibold text-white transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-70"
+                >
+                  Add Comment
+                </button>
+              </div>
+
+              <div className="mt-5">
+                {areCommentsLoading ? (
+                  <div className="rounded-2xl border border-[var(--color-line)] bg-[var(--color-surface)] px-4 py-5 text-sm text-[var(--color-ink-soft)]">
+                    댓글을 불러오는 중입니다.
+                  </div>
+                ) : comments.length === 0 ? (
+                  <div className="rounded-2xl border border-dashed border-[var(--color-line)] px-4 py-5 text-sm text-[var(--color-ink-soft)]">
+                    아직 댓글이 없습니다.
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {comments.map((comment) => (
+                      <div
+                        key={comment.id}
+                        className="rounded-2xl border border-[var(--color-line)] bg-[var(--color-surface)] px-4 py-4"
+                      >
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="text-sm font-semibold text-[var(--color-ink)]">
+                            {comment.author.name}
+                          </div>
+                          <div className="text-xs text-[var(--color-ink-soft)]">
+                            {new Intl.DateTimeFormat("ko-KR", {
+                              month: "short",
+                              day: "numeric",
+                              hour: "numeric",
+                              minute: "2-digit",
+                            }).format(new Date(comment.createdAt))}
+                          </div>
+                        </div>
+                        <p className="mt-3 text-sm leading-6 text-[var(--color-ink-soft)]">
+                          {comment.content}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>

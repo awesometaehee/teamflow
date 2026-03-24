@@ -13,9 +13,10 @@ public record TaskSummaryResponse(
         LocalDateTime dueAt,
         LocalDateTime completedAt,
         LocalDateTime createdAt,
-        LocalDateTime updatedAt
+        LocalDateTime updatedAt,
+        long commentCount
 ) {
-    public static TaskSummaryResponse from(Task task) {
+    public static TaskSummaryResponse from(Task task, long commentCount) {
         return new TaskSummaryResponse(
                 task.getId(),
                 task.getTitle(),
@@ -24,7 +25,8 @@ public record TaskSummaryResponse(
                 task.getDueAt(),
                 task.getCompletedAt(),
                 task.getCreatedAt(),
-                task.getUpdatedAt()
+                task.getUpdatedAt(),
+                commentCount
         );
     }
 }

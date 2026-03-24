@@ -1,5 +1,6 @@
 package com.example.teamflow.task.service;
 
+import com.example.teamflow.comment.repository.TaskCommentRepository;
 import com.example.teamflow.common.exception.ForbiddenException;
 import com.example.teamflow.task.dto.request.TaskCreateRequest;
 import com.example.teamflow.task.dto.request.TaskStatusUpdateRequest;
@@ -18,16 +19,19 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class TaskService {
 
     private final TaskRepository taskRepository;
     private final UserService userService;
+    private final TaskCommentRepository taskCommentRepository;
 
-    public TaskService(TaskRepository taskRepository, UserService userService) {
+    public TaskService(TaskRepository taskRepository, UserService userService, TaskCommentRepository taskCommentRepository) {
         this.taskRepository = taskRepository;
         this.userService = userService;
+        this.taskCommentRepository = taskCommentRepository;
     }
 
     @Transactional
@@ -40,7 +44,8 @@ public class TaskService {
                 creator
         );
 
-        return TaskSummaryResponse.from(taskRepository.save(task));
+        Task savedTask = taskRepository.save(task);
+        return TaskSummaryResponse.from(savedTask, 0);
     }
 
     @Transactional(readOnly = true)
@@ -65,17 +70,13 @@ public class TaskService {
             case DONE -> taskRepository.findAllByCreatorIdAndStatusOrderByCompletedAtDesc(creatorId, TaskStatus.DONE);
         };
 
-        return tasks.stream()
-                .map(TaskSummaryResponse::from)
-                .toList();
+        return mapTaskSummaries(tasks);
     }
 
     @Transactional(readOnly = true)
     public TaskDetailResponse getTask(Long currentUserId, Long taskId) {
-        Long userId = userService.requireCurrentUserId(currentUserId);
-        Task task = getTaskOrThrow(taskId);
-        assertCanViewTask(task, userId);
-        return TaskDetailResponse.from(task);
+        Task task = getAccessibleTask(currentUserId, taskId);
+        return TaskDetailResponse.from(task, getCommentCount(task.getId()));
     }
 
     @Transactional
@@ -92,7 +93,7 @@ public class TaskService {
                 assignee
         );
 
-        return TaskDetailResponse.from(task);
+        return TaskDetailResponse.from(task, getCommentCount(task.getId()));
     }
 
     @Transactional
@@ -101,7 +102,7 @@ public class TaskService {
         Task task = getTaskOrThrow(taskId);
         assertCanChangeStatus(task, userId);
         task.changeStatus(request.status());
-        return TaskDetailResponse.from(task);
+        return TaskDetailResponse.from(task, getCommentCount(task.getId()));
     }
 
     @Transactional
@@ -112,9 +113,40 @@ public class TaskService {
         taskRepository.delete(task);
     }
 
+    @Transactional(readOnly = true)
+    public Task getAccessibleTask(Long currentUserId, Long taskId) {
+        Long userId = userService.requireCurrentUserId(currentUserId);
+        Task task = getTaskOrThrow(taskId);
+        assertCanViewTask(task, userId);
+        return task;
+    }
+
     private Task getTaskOrThrow(Long taskId) {
         return taskRepository.findWithDetailsById(taskId)
                 .orElseThrow(() -> new TaskNotFoundException(taskId));
+    }
+
+    private List<TaskSummaryResponse> mapTaskSummaries(List<Task> tasks) {
+        List<Long> taskIds = tasks.stream()
+                .map(Task::getId)
+                .toList();
+
+        var commentCountMap = taskCommentRepository.countByTaskIds(taskIds).stream()
+                .collect(Collectors.toMap(
+                        TaskCommentRepository.TaskCommentCountView::getTaskId,
+                        TaskCommentRepository.TaskCommentCountView::getCommentCount
+                ));
+
+        return tasks.stream()
+                .map(task -> TaskSummaryResponse.from(task, commentCountMap.getOrDefault(task.getId(), 0L)))
+                .toList();
+    }
+
+    private long getCommentCount(Long taskId) {
+        return taskCommentRepository.countByTaskIds(List.of(taskId)).stream()
+                .findFirst()
+                .map(TaskCommentRepository.TaskCommentCountView::getCommentCount)
+                .orElse(0L);
     }
 
     private void assertCanViewTask(Task task, Long userId) {

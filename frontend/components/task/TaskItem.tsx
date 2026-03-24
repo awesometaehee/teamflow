@@ -32,23 +32,26 @@ export function TaskItem({ task, onClick }: TaskItemProps) {
         onClick={() => onClick(task)}
         className="w-full rounded-2xl border border-[var(--color-line)] bg-[var(--color-surface)] px-5 py-4 text-left transition hover:border-[var(--color-accent)] hover:bg-white"
       >
-      <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-        <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="rounded-full border border-[var(--color-line)] bg-white px-3 py-1 text-xs font-semibold tracking-[0.12em] text-[var(--color-ink-soft)]">
-              {statusLabel[task.status]}
-            </span>
-            <h3 className="text-base font-semibold text-[var(--color-ink)]">{task.title}</h3>
+        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="rounded-full border border-[var(--color-line)] bg-white px-3 py-1 text-xs font-semibold tracking-[0.12em] text-[var(--color-ink-soft)]">
+                {statusLabel[task.status]}
+              </span>
+              <h3 className="text-base font-semibold text-[var(--color-ink)]">{task.title}</h3>
+              <span className="rounded-full bg-[rgba(16,24,47,0.06)] px-3 py-1 text-xs font-semibold text-[var(--color-ink-soft)]">
+                {task.commentCount} comments
+              </span>
+            </div>
+            {task.description ? (
+              <p className="mt-2 text-sm leading-6 text-[var(--color-ink-soft)]">{task.description}</p>
+            ) : null}
           </div>
-          {task.description ? (
-            <p className="mt-2 text-sm leading-6 text-[var(--color-ink-soft)]">{task.description}</p>
-          ) : null}
-        </div>
 
-        <div className="text-sm text-[var(--color-ink-soft)]">
-          Due {formatDateLabel(task.dueAt)}
+          <div className="text-sm text-[var(--color-ink-soft)]">
+            Due {formatDateLabel(task.dueAt)}
+          </div>
         </div>
-      </div>
       </button>
     </li>
   );

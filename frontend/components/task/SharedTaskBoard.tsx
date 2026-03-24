@@ -50,6 +50,7 @@ export function SharedTaskBoard() {
       completedAt: task.completedAt,
       createdAt: task.createdAt,
       updatedAt: task.updatedAt,
+      commentCount: task.commentCount,
     };
 
     setSelectedTask(summary);

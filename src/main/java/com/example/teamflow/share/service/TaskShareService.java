@@ -1,5 +1,6 @@
 package com.example.teamflow.share.service;
 
+import com.example.teamflow.comment.repository.TaskCommentRepository;
 import com.example.teamflow.common.exception.BadRequestException;
 import com.example.teamflow.common.exception.ForbiddenException;
 import com.example.teamflow.share.dto.request.TaskShareCreateRequest;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class TaskShareService {
@@ -23,11 +25,18 @@ public class TaskShareService {
     private final TaskRepository taskRepository;
     private final TaskShareRepository taskShareRepository;
     private final UserService userService;
+    private final TaskCommentRepository taskCommentRepository;
 
-    public TaskShareService(TaskRepository taskRepository, TaskShareRepository taskShareRepository, UserService userService) {
+    public TaskShareService(
+            TaskRepository taskRepository,
+            TaskShareRepository taskShareRepository,
+            UserService userService,
+            TaskCommentRepository taskCommentRepository
+    ) {
         this.taskRepository = taskRepository;
         this.taskShareRepository = taskShareRepository;
         this.userService = userService;
+        this.taskCommentRepository = taskCommentRepository;
     }
 
     @Transactional
@@ -44,7 +53,7 @@ public class TaskShareService {
         }
 
         task.addShare(sharedUser);
-        return TaskDetailResponse.from(task);
+        return TaskDetailResponse.from(task, getCommentCount(task.getId()));
     }
 
     @Transactional
@@ -60,21 +69,20 @@ public class TaskShareService {
         }
 
         task.removeShare(sharedUser);
-        return TaskDetailResponse.from(task);
+        return TaskDetailResponse.from(task, getCommentCount(task.getId()));
     }
 
     @Transactional(readOnly = true)
     public SharedTaskListResponse getSharedTasks(Long currentUserId) {
         Long userId = userService.requireCurrentUserId(currentUserId);
 
-        List<TaskSummaryResponse> assignedTasks = taskRepository.findAssignedTasks(userId).stream()
-                .map(TaskSummaryResponse::from)
-                .toList();
+        List<Task> assignedTaskEntities = taskRepository.findAssignedTasks(userId);
+        List<TaskSummaryResponse> assignedTasks = mapTaskSummaries(assignedTaskEntities);
 
-        List<TaskSummaryResponse> sharedTasks = taskRepository.findSharedTasks(userId).stream()
+        List<Task> sharedTaskEntities = taskRepository.findSharedTasks(userId).stream()
                 .filter(task -> task.getAssignee() == null || !task.getAssignee().getId().equals(userId))
-                .map(TaskSummaryResponse::from)
                 .toList();
+        List<TaskSummaryResponse> sharedTasks = mapTaskSummaries(sharedTaskEntities);
 
         return new SharedTaskListResponse(assignedTasks, sharedTasks);
     }
@@ -100,5 +108,28 @@ public class TaskShareService {
         if (task.getAssignee() != null && task.getAssignee().getId().equals(sharedUser.getId())) {
             throw new BadRequestException("INVALID_SHARE_TARGET", "The assignee does not need an additional share");
         }
+    }
+
+    private List<TaskSummaryResponse> mapTaskSummaries(List<Task> tasks) {
+        List<Long> taskIds = tasks.stream()
+                .map(Task::getId)
+                .toList();
+
+        var commentCountMap = taskCommentRepository.countByTaskIds(taskIds).stream()
+                .collect(Collectors.toMap(
+                        TaskCommentRepository.TaskCommentCountView::getTaskId,
+                        TaskCommentRepository.TaskCommentCountView::getCommentCount
+                ));
+
+        return tasks.stream()
+                .map(task -> TaskSummaryResponse.from(task, commentCountMap.getOrDefault(task.getId(), 0L)))
+                .toList();
+    }
+
+    private long getCommentCount(Long taskId) {
+        return taskCommentRepository.countByTaskIds(List.of(taskId)).stream()
+                .findFirst()
+                .map(TaskCommentRepository.TaskCommentCountView::getCommentCount)
+                .orElse(0L);
     }
 }

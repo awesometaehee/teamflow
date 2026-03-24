@@ -21,3 +21,11 @@ VALUES
     (2, 4, 1, DATEADD('HOUR', 12, CURRENT_DATE));
 
 ALTER TABLE task_shares ALTER COLUMN id RESTART WITH 3;
+
+INSERT INTO task_comments (id, task_id, author_id, content, created_at)
+VALUES
+    (1, 2, 1, 'We should keep the collaboration flow simple for MVP.', DATEADD('HOUR', 13, CURRENT_DATE)),
+    (2, 2, 2, 'I can take the assignee perspective once the UI is ready.', DATEADD('HOUR', 14, CURRENT_DATE)),
+    (3, 4, 2, 'Draft first, then share with Alice for review.', DATEADD('HOUR', 15, CURRENT_DATE));
+
+ALTER TABLE task_comments ALTER COLUMN id RESTART WITH 4;
