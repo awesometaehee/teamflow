@@ -41,8 +41,8 @@ export function NotificationPanel({
   }
 
   return (
-    <div className="absolute right-0 top-[calc(100%+14px)] z-50 w-full max-w-md rounded-[30px] border border-[var(--color-line)] bg-[rgba(255,255,255,0.98)] p-4 shadow-[0_30px_80px_rgba(15,23,47,0.18)] backdrop-blur">
-      <div className="flex items-center justify-between gap-3 border-b border-[var(--color-line)] pb-4">
+    <div className="absolute left-1/2 top-[calc(100%+14px)] z-50 w-[min(24rem,calc(100vw-2rem))] -translate-x-1/2 rounded-[30px] border border-[var(--color-line)] bg-[rgba(255,255,255,0.98)] p-4 shadow-[0_30px_80px_rgba(15,23,47,0.18)] backdrop-blur sm:left-auto sm:right-0 sm:w-[24rem] sm:translate-x-0">
+      <div className="flex flex-col gap-3 border-b border-[var(--color-line)] pb-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--color-accent)]">
             알림
@@ -89,7 +89,7 @@ export function NotificationPanel({
                     : "rounded-[24px] border border-[var(--color-line-strong)] bg-[var(--color-accent-soft)] px-4 py-4"
                 }
               >
-                <div className="flex items-center justify-between gap-3">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-[var(--color-accent-strong)]">
                     {typeLabel[notification.type]}
                   </span>
@@ -105,7 +105,7 @@ export function NotificationPanel({
 
                 <p className="mt-3 text-sm leading-6 text-[var(--color-ink)]">{notification.message}</p>
 
-                <div className="mt-3 flex items-center justify-between gap-3">
+                <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <Link
                     href="/my-tasks"
                     className="text-xs font-semibold text-[var(--color-accent)] transition hover:opacity-80"
